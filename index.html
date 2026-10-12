@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>186 HOME - TikTok MultiShop</title>
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: "Segoe UI", system-ui, sans-serif; background: #111418; color: #e8eaed; }
+  #app { display: flex; height: 100%; }
+
+  #sidebar { width: 230px; background: #1a1e24; display: flex; flex-direction: column; border-right: 1px solid #2a2f37; flex-shrink: 0; overflow: hidden; transition: margin-left .2s ease; }
+  #sidebar.collapsed { margin-left: -230px; }
+  .brand { padding: 12px 14px; border-bottom: 1px solid #2a2f37; background: #14181d; display: flex; justify-content: center; }
+  .brand-card { background: #ffffff; border-radius: 8px; padding: 6px 12px; display: flex; align-items: center; justify-content: center; width: 100%; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+  .brand-logo { max-width: 100%; height: auto; max-height: 42px; display: block; object-fit: contain; }
+  .sidebar-header { font-size: 11px; font-weight: 700; padding: 10px 14px 4px; letter-spacing: .6px; color: #8e959e; text-transform: uppercase; }
+  #shopList { flex: 1; overflow-y: auto; padding: 4px 8px; }
+  .shop { display: flex; align-items: center; gap: 8px; padding: 9px 10px; margin: 2px 0; border-radius: 8px; cursor: pointer; font-size: 14px; user-select: none; transition: background .15s, border .15s; position: relative; }
+  .shop:hover { background: #242a32; }
+  .shop.active { background: #2c333d; }
+  .shop.dragging { opacity: 0.35; background: #1f252d; }
+  .shop.drag-over-top { box-shadow: inset 0 2px 0 0 #0f9d94; }
+  .shop.drag-over-bottom { box-shadow: inset 0 -2px 0 0 #0f9d94; }
+  .drag-handle { color: #525a66; font-size: 13px; cursor: grab; padding: 2px 2px; line-height: 1; flex: none; letter-spacing: -2px; }
+  .drag-handle:active { cursor: grabbing; }
+  .shop:hover .drag-handle { color: #9aa0a6; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .shop span.name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .shop .reorder-actions { display: none; gap: 2px; margin-left: 4px; }
+  .shop:hover .reorder-actions { display: flex; }
+  .move-btn { background: #1c2128; border: 1px solid #363d47; color: #a4abb5; padding: 2px 5px; border-radius: 4px; cursor: pointer; font-size: 10px; line-height: 1; }
+  .move-btn:hover { background: #0f9d94; color: #fff; border-color: #0f9d94; }
+  .move-btn:disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+  #addBtn { margin: 10px; padding: 10px; border: 1px dashed #4a525e; background: transparent; color: #cfd3d8; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  #addBtn:hover { background: #242a32; }
+
+  #main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #colorBar { height: 4px; background: #444; }
+  #topbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #1a1e24; border-bottom: 1px solid #2a2f37; }
+  #toggleSidebarBtn { padding: 7px 11px; font-size: 13px; font-weight: bold; }
+  #shopTitle { font-weight: 600; font-size: 15px; margin-right: 12px; }
+  .tab, .btn { border: 0; background: #2c333d; color: #e8eaed; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .tab:hover, .btn:hover { background: #38414d; }
+  .tabs-group { display: flex; align-items: center; gap: 3px; background: #14181d; padding: 3px; border-radius: 8px; border: 1px solid #2e353f; }
+  .tabs-group .tab { border: 0; background: transparent; color: #a4abb5; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .15s; }
+  .tabs-group .tab:hover { background: #262c35; color: #fff; }
+  .tabs-group .tab.active { background: #0f9d94; color: #fff; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .spacer { flex: 1; }
+  .zoom-group { display: flex; align-items: center; background: #242931; border-radius: 6px; overflow: hidden; border: 1px solid #333a44; }
+  .zoom-group .btn { background: transparent; padding: 7px 10px; border-radius: 0; min-width: 30px; text-align: center; }
+  .zoom-group .btn:hover { background: #38414d; }
+  .zoom-group #zoomResetBtn { min-width: 50px; font-weight: 500; font-size: 12px; }
+  .btn.danger:hover { background: #8a2c2c; }
+  #content { flex: 1; position: relative; }
+  #content webview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+  }
+  #content webview.hidden {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+  }
+  .hidden { display: none !important; }
+  #empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #7c838c; font-size: 15px; text-align: center; line-height: 1.7; }
+
+  dialog { border: 1px solid #3a414c; background: #1f242b; color: #e8eaed; border-radius: 12px; padding: 22px; width: 460px; }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  dialog h2 { margin: 0 0 14px; font-size: 17px; }
+  label { display: block; font-size: 12px; color: #9aa0a6; margin: 12px 0 4px; }
+  input[type=text] { width: 100%; padding: 9px 10px; border-radius: 6px; border: 1px solid #3a414c; background: #14181d; color: #e8eaed; font-size: 14px; }
+  input[type=color] { width: 60px; height: 34px; border: 0; background: transparent; padding: 0; }
+  .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .btn.primary { background: #0f9d94; }
+  .btn.primary:hover { background: #12b3a9; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div class="brand">
+      <div class="brand-card">
+        <img src="logo.png" alt="186 HOME" class="brand-logo">
+      </div>
+    </div>
+    <div class="sidebar-header">Gian hàng</div>
+    <div id="shopList"></div>
+    <button id="addBtn">+ Thêm gian hàng</button>
+  </div>
+  <div id="main">
+    <div id="colorBar"></div>
+    <div id="topbar" class="hidden">
+      <button class="btn" id="toggleSidebarBtn" title="Thu gọn danh sách gian hàng">◀</button>
+      <div id="shopTitle"></div>
+      <div class="tabs-group" id="tabsGroup">
+        <button class="tab active" id="tabAdsBtn">📊 GMV Max / Ads</button>
+        <button class="tab" id="tabOrdersBtn">📦 Check Đơn hàng</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="zoom-group" title="Phóng to / Thu nhỏ (hoặc giữ Ctrl + Lăn chuột)">
+        <button class="btn" id="zoomOutBtn" title="Thu nhỏ (Ctrl -)">−</button>
+        <button class="btn" id="zoomResetBtn" title="Đặt lại 100% (Ctrl 0)">100%</button>
+        <button class="btn" id="zoomInBtn" title="Phóng to (Ctrl +)">+</button>
+      </div>
+      <button class="btn" id="backBtn" title="Quay lại">◀</button>
+      <button class="btn" id="reloadBtn" title="Tải lại">⟳ Tải lại</button>
+      <button class="btn" id="editBtn">Sửa</button>
+      <button class="btn danger" id="logoutBtn" title="Xóa phiên đăng nhập của gian này">Đăng xuất gian</button>
+      <button class="btn danger" id="deleteBtn">Xóa gian</button>
+    </div>
+    <div id="content">
+      <div id="empty">Chưa có gian nào.<br>Bấm “+ Thêm gian hàng” bên trái để bắt đầu.</div>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <h2 id="dlgTitle">Thêm gian hàng</h2>
+  <label>Tên gian hàng</label>
+  <input type="text" id="fName" placeholder="VD: Gian A - Mỹ phẩm">
+  <label>Link GMV Max Ads</label>
+  <input type="text" id="fAds" placeholder="https://seller-vn.tiktok.com/ads-creation/dashboard?...">
+  <label>Link Check Đơn hàng</label>
+  <input type="text" id="fOrders" placeholder="https://seller-vn.tiktok.com/order?...">
+  <label>Màu nhận diện (để khỏi nhầm gian)</label>
+  <input type="color" id="fColor" value="#0f9d94">
+  <div class="row">
+    <button class="btn" id="cancelBtn">Hủy</button>
+    <button class="btn primary" id="saveBtn">Lưu</button>
+  </div>
+</dialog>
+
+<script src="renderer.js"></script>
+</body>
+</html>

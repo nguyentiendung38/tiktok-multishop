@@ -1,0 +1,36 @@
+TIKTOK MULTISHOP - HUONG DAN
+============================
+
+CHAY THU (cai 1 lan)
+1. Cai Node.js (ban LTS): https://nodejs.org
+2. Giai nen thu muc nay, mo CMD tai thu muc do, go:
+      npm install
+      npm start
+3. Bam "+ Them gian hang", dat ten, bam Luu.
+4. Dang nhap tai khoan gian do 1 lan. Lan sau mo app la vao thang.
+5. Lap lai cho tung gian (gian moi cung them theo cach nay).
+
+DONG GOI THANH ICON DESKTOP:
+A. Cho WINDOWS:
+   Cach 1 (File cai dat tu tao icon Desktop):
+      npm run build:installer
+      Chay file Setup trong "dist", app se tu dong tao icon "186 HOME - TikTok MultiShop" ngoai Desktop.
+   Cach 2 (File Portable khong can cai):
+      npm run build:portable
+      Vao thu muc "dist", chuot phai vao file .exe -> Send to -> Desktop (create shortcut).
+
+B. Cho MACBOOK (macOS):
+   Copy thu muc du an sang MacBook, mo Terminal tai thu muc do, chay:
+      npm install
+      npm run build:mac
+   Vao thu muc "dist", mo file .dmg va keo app vao Applications.
+   Tu Applications, keo icon app ra man hinh Desktop hoac thanh Dock.
+
+LUU Y
+- Moi gian co phien dang nhap rieng (cookie tach biet), khong de len nhau.
+- App KHONG luu mat khau. Phien dang nhap duoc giu bang cookie, het han thi dang nhap lai.
+- Nut "Dang xuat gian" xoa phien cua rieng gian do.
+- Du lieu danh sach gian luu o: %APPDATA%\tiktok-multishop\shops.json
+- Moi gian co 2 tab tien ich: "GMV Max / Ads" va "Check don hang".
+- Co the doi thu tu cac gian hang bang cach keo tha hoac bam nut mui ten ▲ ▼ ben canh ten gian.
+- Muon sua link GMV Max hoac Check don: bam "Sua" tren thanh cong cu de dan link tuy chinh.

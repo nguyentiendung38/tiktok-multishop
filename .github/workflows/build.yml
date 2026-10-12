@@ -8,6 +8,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -34,11 +36,15 @@ jobs:
 
       - name: Build for Windows
         if: matrix.platform == 'windows'
-        run: npm run build:installer -- --publish never
+        run: npm run build:installer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build for macOS
         if: matrix.platform == 'macos'
-        run: npm run build:mac -- --publish never
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows installer
         if: matrix.platform == 'windows'

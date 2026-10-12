@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "Quan ly nhieu gian hang TikTok Shop trong 1 app",
   "main": "main.js",
+  "author": "186 HOME",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis --publish never",
-    "build:mac": "electron-builder --mac --publish never"
+    "build:installer": "electron-builder --win nsis",
+    "build:mac": "electron-builder --mac"
   },
   "build": {
     "appId": "local.tiktok.multishop",
     "productName": "186 HOME - TikTok MultiShop",
+    "publish": null,
     "files": [
       "**/*"
     ],

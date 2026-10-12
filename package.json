@@ -7,15 +7,20 @@
     "start": "electron .",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis",
-    "build:mac": "electron-builder --mac"
+    "build:installer": "electron-builder --win nsis --publish never",
+    "build:mac": "electron-builder --mac --publish never"
   },
   "build": {
     "appId": "local.tiktok.multishop",
     "productName": "186 HOME - TikTok MultiShop",
-    "files": ["**/*"],
+    "files": [
+      "**/*"
+    ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "icon.png"
     },
     "nsis": {
@@ -26,7 +31,10 @@
       "shortcutName": "186 HOME - TikTok MultiShop"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "icon.png",
       "category": "public.app-category.business"
     }

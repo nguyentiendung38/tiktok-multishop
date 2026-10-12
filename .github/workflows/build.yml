@@ -1,15 +1,22 @@
+
 name: Build Multi-Platform App
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -20,20 +27,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm install
 
       - name: Build for Windows
-        if: matrix.os == 'windows-latest'
-        run: npm run build:installer
+        if: matrix.platform == 'windows'
+        run: npm run build:installer -- --publish never
 
       - name: Build for macOS
-        if: matrix.os == 'macos-latest'
-        run: npm run build:mac
+        if: matrix.platform == 'macos'
+        run: npm run build:mac -- --publish never
 
-      - name: Upload Artifacts
+      - name: Upload Windows installer
+        if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ matrix.os }}
-          path: dist/*.*
+          name: app-windows
+          path: |
+            dist/*.exe
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload macOS installer
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-macos-latest
+          path: |
+            dist/*.dmg
+            dist/*-mac.zip
+          if-no-files-found: error
+          retention-days: 7
